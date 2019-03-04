@@ -1,32 +1,29 @@
-import { Prisma } from "prisma-binding";
+import {Prisma} from "prisma-binding";
 
 const prisma = new Prisma({
    typeDefs: 'src/generated/prisma.graphql',
    endpoint: 'http://192.168.99.100:4466',
 });
 
-// prisma.query.users(null, '{ id name posts {id title} }').then((data) => {
-//    console.log(JSON.stringify(data, undefined, 2));
-// });
+const updatePostForUser = async (postId, data) => {
+   const post = await prisma.mutation.updatePost({
+      where: {
+         id: postId
+      },
+      data
+   }, '{ author {id} }');
 
-// prisma.mutation.createPost({
-//    data: {
-//       title: "GraphQL 101",
-//       body: "",
-//       published: false,
-//       author: {
-//          connect: {
-//             id: "cjsdsmmdh000s0786y12dx5bk"
-//          }
-//       }
-//
-//    }
-// }, '{ id title body published }').then((data) => {
-//    console.log(data);
-//    return prisma.query.users(null, '{ id name posts {id title} }')
-// }).then((data) => {
-//    console.log(JSON.stringify(data, undefined, 2))
-// });
+   return await prisma.query.user({
+      where: {
+         id: post.author.id
+      }
+   }, '{ id name email posts {id title published }}')
+};
+
+updatePostForUser("cjsuqcc2800620786qct6ysy9", { published: false } ).then((user) => {
+   console.log(JSON.stringify(user, undefined, 2))
+});
+
 
 prisma.mutation.updatePost({
    where: {
